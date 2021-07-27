@@ -87,16 +87,16 @@ class DUATextDataParser: DUADataParser {
 
         let paragraphStyleTitle = NSMutableParagraphStyle()
         paragraphStyleTitle.alignment = NSTextAlignment.center
-        let dictTitle: [NSAttributedStringKey: Any] = [NSAttributedStringKey.font:UIFont.boldSystemFont(ofSize: 19),
-                                                  NSAttributedStringKey.paragraphStyle:paragraphStyleTitle]
+        let dictTitle: [NSAttributedString.Key: Any] = [.font:UIFont.boldSystemFont(ofSize: 19),
+                                                  .paragraphStyle:paragraphStyleTitle]
 
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = NSTextAlignment.justified
         paragraphStyle.lineHeightMultiple = config.lineHeightMutiplier
         let font = UIFont.init(name: config.fontName, size: config.fontSize)
-        let dict: [NSAttributedStringKey: Any] = [NSAttributedStringKey.font:font!,
-                                                        NSAttributedStringKey.paragraphStyle:paragraphStyle,
-                                                        NSAttributedStringKey.foregroundColor:UIColor.black]
+        let dict: [NSAttributedString.Key: Any] = [.font:font!,
+                                                        .paragraphStyle:paragraphStyle,
+                                                        .foregroundColor:UIColor.black]
         
         let newTitle = "\n" + titleString + "\n\n"
         let attrString = NSMutableAttributedString.init(string: newTitle, attributes: dictTitle)

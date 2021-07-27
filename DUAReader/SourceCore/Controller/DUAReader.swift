@@ -249,16 +249,16 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     private func loadPageViewController() -> Void {
 
         self.clearReaderViewIfNeed()
-        let transtionStyle: UIPageViewControllerTransitionStyle = (self.config.scrollType == .curl) ? .pageCurl : .scroll
+        let transtionStyle: UIPageViewController.TransitionStyle = (self.config.scrollType == .curl) ? .pageCurl : .scroll
         self.pageVC = DUAContainerPageViewController(transitionStyle: transtionStyle, navigationOrientation: .horizontal, options: nil)
         self.pageVC?.dataSource = self
         self.pageVC?.delegate = self
         self.pageVC?.view.backgroundColor = UIColor.clear
         self.pageVC?.isDoubleSided = (self.config.scrollType == .curl) ? true : false
         
-        self.addChildViewController(self.pageVC!)
+        self.addChild(self.pageVC!)
         self.view.addSubview((self.pageVC?.view)!)
-        self.pageVC?.didMove(toParentViewController: self)
+        self.pageVC?.didMove(toParent: self)
     }
     
     private func loadTableView() -> Void {
@@ -287,8 +287,8 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
         self.translationVC = DUAtranslationControllerExt()
         self.translationVC?.delegate = self
         self.translationVC?.allowAnimating = animating
-        self.addChildViewController(self.translationVC!)
-        self.translationVC?.didMove(toParentViewController: self)
+        self.addChild(self.translationVC!)
+        self.translationVC?.didMove(toParent: self)
         self.view.addSubview(self.translationVC!.view)
     }
     
@@ -311,7 +311,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
             
             self.tableView?.isReloading = true
             self.tableView?.reloadData()
-            self.tableView?.scrollToRow(at: IndexPath.init(row: tableView!.cellIndex, section: 0), at: UITableViewScrollPosition.top, animated: false)
+            self.tableView?.scrollToRow(at: IndexPath.init(row: tableView!.cellIndex, section: 0), at: .top, animated: false)
             self.tableView?.isReloading = false
             
             self.statusBarForTableView?.totalPageCounts = (tableView?.dataArray.count)!
@@ -347,7 +347,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
             }
         }
         if config.scrollType == .horizontal || config.scrollType == .none {
-            curPage = translationVC?.childViewControllers.first as? DUAPageViewController
+            curPage = translationVC?.children.first as? DUAPageViewController
             if curPage != nil {
                 let imageView = curPage?.view.subviews.first as! UIImageView
                 imageView.image = self.config.backgroundImage
@@ -376,8 +376,8 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     func clearReaderViewIfNeed() -> Void {
         if self.pageVC != nil {
             self.pageVC?.view.removeFromSuperview()
-            self.pageVC?.willMove(toParentViewController: nil)
-            self.pageVC?.removeFromParentViewController()
+            self.pageVC?.willMove(toParent: nil)
+            self.pageVC?.removeFromParent()
         }
         if self.tableView != nil {
             for item in self.view.subviews {
@@ -386,8 +386,8 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
         }
         if self.translationVC != nil {
             self.translationVC?.view.removeFromSuperview()
-            self.translationVC?.willMove(toParentViewController: nil)
-            self.translationVC?.removeFromParentViewController()
+            self.translationVC?.willMove(toParent: nil)
+            self.translationVC?.removeFromParent()
         }
     }
     
@@ -777,7 +777,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
             }
         }
         if cell == nil {
-            cell = DUATableViewCell.init(style: UITableViewCellStyle.default, reuseIdentifier: "dua.reader.cell")
+            cell = DUATableViewCell.init(style: UITableViewCell.CellStyle.default, reuseIdentifier: "dua.reader.cell")
         }
         
         let pageModel = self.tableView?.dataArray[indexPath.row]
@@ -914,7 +914,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     
     func translationController(translationController: DUAtranslationController, didFinishAnimating finished: Bool, previousController: UIViewController, transitionCompleted completed: Bool)
     {
-        self.containerController(type: 1, currentController: translationController.childViewControllers.first!, didFinishedTransition: completed, previousController: previousController)
+        self.containerController(type: 1, currentController: translationController.children.first!, didFinishedTransition: completed, previousController: previousController)
     }
 
 }

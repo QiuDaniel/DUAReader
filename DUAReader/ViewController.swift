@@ -13,7 +13,7 @@ class ViewController: UIViewController, DUAReaderDelegate, UITableViewDelegate, 
     
     var msettingView = UIView()
     var mreader: DUAReader!
-    var indicatorView = UIActivityIndicatorView.init(activityIndicatorStyle: UIActivityIndicatorViewStyle.whiteLarge)
+    var indicatorView = UIActivityIndicatorView.init(style: UIActivityIndicatorView.Style.whiteLarge)
     var curPage = 0
     var curChapter = 0
     var curChapterTotalPages = 0
@@ -73,7 +73,7 @@ class ViewController: UIViewController, DUAReaderDelegate, UITableViewDelegate, 
         self.sideBar = UIView.init(frame: CGRect(x: 0, y: 0, width: width, height: height))
         let dirBtn = UIButton.init(frame: CGRect(x: 0, y: 0, width: width/4, height: 30))
         let markBtn = UIButton.init(frame: CGRect(x: width/4, y: 0, width: width/4, height: 30))
-        dirBtn.setTitle("目录", for: UIControlState.normal)
+        dirBtn.setTitle("目录", for: .normal)
         dirBtn.backgroundColor = UIColor.black
         dirBtn.alpha = 0.8
         dirBtn.setTitleColor(UIColor.white, for: .normal)
@@ -85,7 +85,7 @@ class ViewController: UIViewController, DUAReaderDelegate, UITableViewDelegate, 
         markBtn.alpha = 0.8
         markBtn.setTitleColor(UIColor.white, for: .normal)
         markBtn.setTitleColor(UIColor.blue, for: .selected)
-        markBtn.setTitleColor(UIColor.red, for: UIControlState.highlighted)
+        markBtn.setTitleColor(UIColor.red, for: .highlighted)
         markBtn.addTarget(self, action: #selector(onMarkBtnClicked(sender:)), for: .touchUpInside)
         
         let lineH = UIView(frame: CGRect(x: 0, y: 30, width: width/2, height: 1))
@@ -338,18 +338,18 @@ class ViewController: UIViewController, DUAReaderDelegate, UITableViewDelegate, 
         for view in topMenu!.subviews.first!.subviews {
             if view is UIButton {
                 let button = view as! UIButton
-                button.addTarget(self, action: #selector(onSettingItemClicked(button:)), for: UIControlEvents.touchUpInside)
+                button.addTarget(self, action: #selector(onSettingItemClicked(button:)), for: .touchUpInside)
             }
         }
         for view in bottomMenu!.subviews.first!.subviews {
             if view is UIButton {
                 let button = view as! UIButton
-                button.addTarget(self, action: #selector(onSettingItemClicked(button:)), for: UIControlEvents.touchUpInside)
+                button.addTarget(self, action: #selector(onSettingItemClicked(button:)), for: .touchUpInside)
             }
             if view is UISlider {
                 let slider = view as! UISlider
                 slider.value = Float(curPage) / Float(curChapterTotalPages)
-                slider.addTarget(self, action: #selector(sliderValueChanged(sender:)), for: UIControlEvents.valueChanged)
+                slider.addTarget(self, action: #selector(sliderValueChanged(sender:)), for: .valueChanged)
             }
         }
         
@@ -402,7 +402,7 @@ class ViewController: UIViewController, DUAReaderDelegate, UITableViewDelegate, 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCell(withIdentifier: "reader.demo.cell")
         if cell == nil {
-            cell = UITableViewCell.init(style: UITableViewCellStyle.default, reuseIdentifier: "reader.demo.cell")
+            cell = UITableViewCell.init(style: .default, reuseIdentifier: "reader.demo.cell")
             cell?.backgroundColor = UIColor.clear
         }else {
             for item in cell!.contentView.subviews {
