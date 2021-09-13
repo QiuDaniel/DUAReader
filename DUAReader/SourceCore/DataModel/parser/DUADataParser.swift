@@ -11,7 +11,7 @@ import DTCoreText
 
 class DUADataParser: NSObject {
 
-    func parseChapterFromBook(path: String, completeHandler: @escaping (Array<String>, Array<DUAChapterModel>) -> Void) {
+    func parseChapterFromBook(path: String, title: String? = nil, completeHandler: @escaping (Array<String>, Array<DUAChapterModel>) -> Void) {
         
     }
     

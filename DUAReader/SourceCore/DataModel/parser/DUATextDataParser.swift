@@ -11,9 +11,10 @@ import DTCoreText
 
 class DUATextDataParser: DUADataParser {
 
-    override func parseChapterFromBook(path: String, completeHandler: @escaping (Array<String>, Array<DUAChapterModel>) -> Void) {
+    override func parseChapterFromBook(path: String, title: String? = nil, completeHandler: @escaping (Array<String>, Array<DUAChapterModel>) -> Void) {
         let url = URL.init(fileURLWithPath: path)
-        let content = try! String.init(contentsOf: url, encoding: String.Encoding.utf8)
+        var content = try! String.init(contentsOf: url, encoding: String.Encoding.utf8)
+        content = content.replacingOccurrences(of: "&nbsp;", with: " ").replacingOccurrences(of: "<br /><br />", with: "\n")
         var models = Array<DUAChapterModel>()
         var titles = Array<String>()
         DispatchQueue.global().async {
@@ -28,8 +29,9 @@ class DUATextDataParser: DUADataParser {
             let results = self.doTitleMatchWith(content: content)
             if results.count == 0 {
                 let model = DUAChapterModel()
-                model.chapterIndex = 1
+                model.chapterIndex = 0
                 model.path = path
+                model.title = title
                 completeHandler([], [model])
             }else {
                 var endIndex = content.startIndex
@@ -68,21 +70,26 @@ class DUATextDataParser: DUADataParser {
     
     override func attributedStringFromChapterModel(chapter: DUAChapterModel, config: DUAConfiguration) -> NSAttributedString? {
         let tmpUrl = URL.init(fileURLWithPath: chapter.path!)
-        let tmpString = try? String.init(contentsOf: tmpUrl, encoding: String.Encoding.utf8)
+        var tmpString = try? String.init(contentsOf: tmpUrl, encoding: String.Encoding.utf8)
+        tmpString = tmpString?.replacingOccurrences(of: "&nbsp;", with: " ").replacingOccurrences(of: "<br /><br />", with: "\n")
         if tmpString == nil {
             return nil
         }
         let textString: String = tmpString!
-        
+        var titleString = chapter.title != nil ? chapter.title! : ""
         let results = self.doTitleMatchWith(content: textString)
         var titleRange = NSRange(location: 0, length: 0)
         if results.count != 0 {
             titleRange = results[0].range
         }
-        let startLocation = textString.index(textString.startIndex, offsetBy: titleRange.location)
-        let endLocation = textString.index(startLocation, offsetBy: titleRange.length - 1)
-        let titleString = String(textString[startLocation...endLocation])
-        let contentString = String(textString[textString.index(after: endLocation)...textString.index(before: textString.endIndex)])
+        var contentString = textString
+        if titleRange.length > 1 {
+            let startLocation = textString.index(textString.startIndex, offsetBy: titleRange.location)
+            let endLocation = textString.index(startLocation, offsetBy: titleRange.length - 1)
+            titleString = String(textString[startLocation...endLocation])
+            contentString = String(textString[textString.index(after: endLocation)...textString.index(before: textString.endIndex)])
+        }
+        
         let paraString = self.formatChapterString(contentString: contentString)
 
         let paragraphStyleTitle = NSMutableParagraphStyle()

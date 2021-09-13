@@ -46,7 +46,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     /// 是否重分页
     private var isReCutPage: Bool = false
     /// 当前页面
-    private var currentPageIndex: Int = 1
+    private var currentPageIndex: Int = 0
     /// 当前章节
     private var currentChapterIndex: Int = 0
     /// 分页前当前页首字符索引
@@ -73,10 +73,10 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     }
     
     // MARK:--对外接口
-    public func readWith(filePath: String, pageIndex: Int) -> Void {
+    public func readWith(filePath: String, pageIndex: Int, title: String? = nil) -> Void {
         
         self.postReaderStateNotification(state: .busy)
-        self.dataParser.parseChapterFromBook(path: filePath, completeHandler: {(titles, models) -> Void in
+        self.dataParser.parseChapterFromBook(path: filePath, title: title, completeHandler: {(titles, models) -> Void in
             if self.delegate?.reader(reader: chapterTitles: ) != nil {
                 self.delegate?.reader(reader: self, chapterTitles: titles)
             }
@@ -434,6 +434,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     
     private func cachePageArray(pageModels: [DUAPageModel], chapterIndex: Int) -> Void {
         self.chapterCaches[String(chapterIndex)] = pageModels
+        pageHunger = true
 ///     for item in self.chapterCaches.keys {
 ///         if Int(item)! - currentChapterIndex > 2 || Int(item)! - currentChapterIndex < -1 {
 ///             self.chapterCaches.removeValue(forKey: item)

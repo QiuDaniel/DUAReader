@@ -32,8 +32,8 @@ class ViewController: UIViewController, DUAReaderDelegate, UITableViewDelegate, 
         mreader.config = configuration
         mreader.delegate = self
         self.present(mreader, animated: true, completion: nil)
-        let bookPath = Bundle.main.path(forResource: "郭黄之恋", ofType: "txt")
-        mreader.readWith(filePath: bookPath!, pageIndex: 1)
+        let bookPath = Bundle.main.path(forResource: "1", ofType: "txt")
+        mreader.readWith(filePath: bookPath!, pageIndex: 1, title: "你好啊")
         
 //        记录阅读的书，demo使用
         curBookName = "郭黄之恋"

@@ -11,7 +11,7 @@ import DTCoreText
 
 class DUAEpubDataParser: DUADataParser {
     
-    override func parseChapterFromBook(path: String, completeHandler: @escaping (Array<String>, Array<DUAChapterModel>) -> Void) {
+    override func parseChapterFromBook(path: String, title: String? = nil, completeHandler: @escaping (Array<String>, Array<DUAChapterModel>) -> Void) {
         let epubZippedPath = DUAUtils.unzipWith(filePath: path)
         let opfPath = DUAUtils.OPFPathFrom(epubPath: epubZippedPath)
         let chapterInfoArray = DUAUtils.parseOPF(opfPath: opfPath)
