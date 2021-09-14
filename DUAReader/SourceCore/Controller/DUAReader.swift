@@ -26,7 +26,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     /// 配置类
     public var config: DUAConfiguration!
     /// 代理
-    public var delegate: DUAReaderDelegate?
+    public weak var delegate: DUAReaderDelegate?
     /// 章节缓存（分页后的页面数组）
     private var chapterCaches: [String: [DUAPageModel]] = [String: [DUAPageModel]]()
     /// chapter model cache
@@ -65,13 +65,9 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     /// 是否成功切换到某章节，成功为0，不成功则记录未成功切换的章节index，当指定跳至某章节时使用
     var successSwitchChapter = 0
     
-    
-    
-    
     override var prefersStatusBarHidden: Bool {
         return true
     }
-    
     
 #if DEBUG
     deinit {
@@ -374,7 +370,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
         let firstView = self.view.subviews.first as? UIImageView
         if firstView != nil {
             firstView?.image = self.config.backgroundImage
-        }else {
+        } else {
             let imageView = UIImageView.init(frame: self.view.frame)
             imageView.image = self.config.backgroundImage
             self.view.insertSubview(imageView, at: 0)
@@ -422,28 +418,27 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
         let page = DUAPageViewController()
         page.index = pageIndex
         page.chapterBelong = chapterIndex
-        if self.config.backgroundImage != nil {
-            page.backgroundImage = self.config.backgroundImage
+        if config.backgroundImage != nil {
+            page.backgroundImage = config.backgroundImage
         }
-        let dtLabel = DUAAttributedView.init(frame: CGRect(x: 0, y: config.contentFrame.origin.y, width: self.view.width, height: config.contentFrame.height))
+        let dtLabel = DUAAttributedView(frame: CGRect(x: 0, y: config.contentFrame.origin.y, width: self.view.frame.size.width, height: config.contentFrame.height))
         dtLabel.edgeInsets = UIEdgeInsets.init(top: 0, left: config.contentFrame.origin.x, bottom: 0, right: config.contentFrame.origin.x)
         
-        let pageArray = self.pageArrayFromCache(chapterIndex: chapterIndex)
+        let pageArray = pageArrayFromCache(chapterIndex: chapterIndex)
         if pageArray.isEmpty {
             return nil
         }
         let pageModel = pageArray[pageIndex]
         dtLabel.attributedString = pageModel.attributedString
-        dtLabel.backgroundColor = UIColor.clear
+        dtLabel.backgroundColor = .clear
         page.view.addSubview(dtLabel)
-    
-        self.addStatusBarTo(view: page.view, totalCounts: pageArray.count, curPage: pageIndex)
+        addStatusBarTo(view: page.view, totalCounts: pageArray.count, curPage: pageIndex)
         
         return page
     }
     
     private func pageArrayFromCache(chapterIndex: Int) -> [DUAPageModel] {
-        if let pageArray = self.chapterCaches[String(chapterIndex)] {
+        if let pageArray = chapterCaches[String(chapterIndex)] {
             return pageArray
         }else {
             return []
@@ -451,7 +446,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     }
     
     private func cachePageArray(pageModels: [DUAPageModel], chapterIndex: Int) -> Void {
-        self.chapterCaches[String(chapterIndex)] = pageModels
+        chapterCaches[String(chapterIndex)] = pageModels
 ///     for item in self.chapterCaches.keys {
 ///         if Int(item)! - currentChapterIndex > 2 || Int(item)! - currentChapterIndex < -1 {
 ///             self.chapterCaches.removeValue(forKey: item)
@@ -461,17 +456,17 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     
     
     private func requestChapterWith(index: Int) -> Void {
-
-        if !self.pageArrayFromCache(chapterIndex: index).isEmpty {
+        if !pageArrayFromCache(chapterIndex: index).isEmpty {
             return
         }
-    
+        if index >= totalChapterModels.count || index < 0 {
+            return
+        }
         /// 这里在书籍解析后直接保存了所有章节model，故直接取即可
-        
         /// 对于分章节阅读的情况，每个章节可能需要通过网络请求获取，完成后调用readWithchapter方法即可
         
         let chapter = totalChapterModels[index]
-        self.readWith(chapter: chapter, pageIndex: 1)
+        readWith(chapter: chapter, pageIndex: 1)
     }
     
     private func updateChapterIndex(index: Int, isFirstLoad: Bool = false) -> Void {
