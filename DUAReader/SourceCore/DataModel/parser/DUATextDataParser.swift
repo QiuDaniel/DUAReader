@@ -14,7 +14,7 @@ class DUATextDataParser: DUADataParser {
     override func parseChapterFromBook(path: String, title: String? = nil, completeHandler: @escaping (Array<String>, Array<DUAChapterModel>) -> Void) {
         let url = URL.init(fileURLWithPath: path)
         var content = try! String.init(contentsOf: url, encoding: String.Encoding.utf8)
-        content = content.replacingOccurrences(of: "&nbsp;", with: " ").replacingOccurrences(of: "<br /><br />", with: "\n")
+        content = content.replacingOccurrences(of: "&nbsp;", with: " ").replacingOccurrences(of: "<br />", with: "\n")
         var models = Array<DUAChapterModel>()
         var titles = Array<String>()
         DispatchQueue.global().async {
@@ -71,7 +71,7 @@ class DUATextDataParser: DUADataParser {
     override func attributedStringFromChapterModel(chapter: DUAChapterModel, config: DUAConfiguration) -> NSAttributedString? {
         let tmpUrl = URL.init(fileURLWithPath: chapter.path!)
         var tmpString = try? String.init(contentsOf: tmpUrl, encoding: String.Encoding.utf8)
-        tmpString = tmpString?.replacingOccurrences(of: "&nbsp;", with: " ").replacingOccurrences(of: "<br /><br />", with: "\n")
+        tmpString = tmpString?.replacingOccurrences(of: "&nbsp;", with: " ").replacingOccurrences(of: "<br />", with: "\n")
         if tmpString == nil {
             return nil
         }

@@ -72,9 +72,15 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
         return true
     }
     
+    
+#if DEBUG
+    deinit {
+        print("DUAReader----deinit")
+    }
+#endif
+    
     // MARK:--对外接口
     public func readWith(filePath: String, pageIndex: Int, title: String? = nil) -> Void {
-        
         self.postReaderStateNotification(state: .busy)
         self.dataParser.parseChapterFromBook(path: filePath, title: title, completeHandler: {(titles, models) -> Void in
             if self.delegate?.reader(reader: chapterTitles: ) != nil {
@@ -83,7 +89,19 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
             self.totalChapterModels = models
             self.readWith(chapter: models.first!, pageIndex: pageIndex)
         })
-        
+    }
+    
+    public func readWith(chapters: [DUAChapterModel], pageIndex: Int) {
+        if chapters.count <= 0 {
+            return
+        }
+        postReaderStateNotification(state: .busy)
+        let titles = chapters.map{ $0.title ?? "" }
+        if let delegate = delegate {
+            delegate.reader(reader: self, chapterTitles: titles)
+        }
+        totalChapterModels = chapters
+        readWith(chapter: chapters[0], pageIndex: pageIndex)
     }
     
     public func readChapterBy(index: Int, pageIndex: Int) -> Void {
@@ -117,7 +135,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
         if self.isReCutPage {
             self.postReaderStateNotification(state: .busy)
             self.chapterCaches.removeAll()
-        }else {
+        } else {
             pageModels = self.pageArrayFromCache(chapterIndex: chapter.chapterIndex)
         }
         if pageModels.isEmpty || self.isReCutPage {
@@ -164,7 +182,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
         if firstIntoReader {
             firstIntoReader = false
             currentPageIndex = pageIndex <= 0 ? 0 : (pageIndex - 1)
-            updateChapterIndex(index: chapter.chapterIndex)
+            updateChapterIndex(index: chapter.chapterIndex, isFirstLoad: true)
             self.loadPage(pageIndex: currentPageIndex)
             if self.delegate?.reader(reader: readerProgressUpdated: curPage: totalPages: ) != nil {
                 self.delegate?.reader(reader: self, readerProgressUpdated: currentChapterIndex, curPage: currentPageIndex + 1, totalPages: self.pageArrayFromCache(chapterIndex: currentChapterIndex).count)
@@ -434,7 +452,6 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     
     private func cachePageArray(pageModels: [DUAPageModel], chapterIndex: Int) -> Void {
         self.chapterCaches[String(chapterIndex)] = pageModels
-        pageHunger = true
 ///     for item in self.chapterCaches.keys {
 ///         if Int(item)! - currentChapterIndex > 2 || Int(item)! - currentChapterIndex < -1 {
 ///             self.chapterCaches.removeValue(forKey: item)
@@ -444,7 +461,8 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     
     
     private func requestChapterWith(index: Int) -> Void {
-        if self.pageArrayFromCache(chapterIndex: index).isEmpty == false {
+
+        if !self.pageArrayFromCache(chapterIndex: index).isEmpty {
             return
         }
     
@@ -452,20 +470,23 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
         
         /// 对于分章节阅读的情况，每个章节可能需要通过网络请求获取，完成后调用readWithchapter方法即可
         
-        let chapter = totalChapterModels[index - 1]
+        let chapter = totalChapterModels[index]
         self.readWith(chapter: chapter, pageIndex: 1)
     }
     
-    private func updateChapterIndex(index: Int) -> Void {
+    private func updateChapterIndex(index: Int, isFirstLoad: Bool = false) -> Void {
         if currentChapterIndex == index {
             return
         }
         print("进入第 \(index) 章")
         let forward = currentChapterIndex > index ? false : true
         currentChapterIndex = index
-        
+        if isFirstLoad && index > 0 {
+            forwardCacheIfNeed(forward: false)
+        }
         /// 每当章节切换时触发预缓存
         self.forwardCacheIfNeed(forward: forward)
+        
     }
     
     
@@ -536,14 +557,15 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
     /// - Parameter forward: 向前缓存还是向后缓存
     private func forwardCacheIfNeed(forward: Bool) -> Void {
         let predictIndex = forward ? currentChapterIndex + 1 : currentChapterIndex - 1
-        if predictIndex <= 0 || predictIndex > totalChapterModels.count {
+        if predictIndex < 0 || predictIndex >= totalChapterModels.count {
             return
         }
         self.cacheQueue.async {
             let nextPageArray = self.pageArrayFromCache(chapterIndex: predictIndex)
             if nextPageArray.isEmpty {
                 print("执行预缓存 章节 \(predictIndex)")
-                self.requestChapterWith(index: predictIndex)
+//                self.requestChapterWith(index: predictIndex)
+                self.forwardCacheWith(chapter: self.totalChapterModels[predictIndex])
             }
         }
     }
@@ -621,7 +643,7 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
             let backPage = DUABackViewController()
             var nextIndex = page.index - 1
             if nextIndex < 0 {
-                if currentChapterIndex <= 1 {
+                if currentChapterIndex < 1 {
                     return nil
                 }
                 FirstPage.arrived = true
@@ -634,9 +656,14 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
                     self.postReaderStateNotification(state: .busy)
                     pageHunger = true
                     return nil
-                }else {
+                } else {
                     backPage.grabViewController(viewController: nextPage!)
                     return backPage
+                }
+            } else {
+                let pageArray = self.pageArrayFromCache(chapterIndex: currentChapterIndex)
+                if nextIndex == pageArray.count / 2  {
+                    forwardCacheIfNeed(forward: false)
                 }
             }
             backPage.grabViewController(viewController: self.getPageVCWith(pageIndex: nextIndex, chapterIndex: page.chapterBelong)!)
@@ -660,6 +687,9 @@ class DUAReader: UIViewController, UIPageViewControllerDelegate, UIPageViewContr
         if viewController is DUAPageViewController {
             let page = viewController as! DUAPageViewController
             nextIndex = page.index + 1
+            if nextIndex == pageArray.count / 2 {
+                forwardCacheIfNeed(forward: true)
+            }
             if nextIndex == pageArray.count {
                 LastPage.arrived = true
             }

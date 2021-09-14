@@ -32,8 +32,21 @@ class ViewController: UIViewController, DUAReaderDelegate, UITableViewDelegate, 
         mreader.config = configuration
         mreader.delegate = self
         self.present(mreader, animated: true, completion: nil)
-        let bookPath = Bundle.main.path(forResource: "1", ofType: "txt")
-        mreader.readWith(filePath: bookPath!, pageIndex: 1, title: "你好啊")
+//        let bookPath = Bundle.main.path(forResource: "1", ofType: "txt")
+//        mreader.readWith(filePath: bookPath!, pageIndex: 1, title: "你好啊")
+        let model1 = DUAChapterModel()
+        model1.chapterIndex = 0
+        model1.title = "第一章"
+        model1.path = Bundle.main.path(forResource: "343507", ofType: "txt")
+        let model2 = DUAChapterModel()
+        model2.chapterIndex = 1
+        model2.title = "第二章"
+        model2.path = Bundle.main.path(forResource: "343508", ofType: "txt")
+        let model3 = DUAChapterModel()
+        model3.chapterIndex = 2
+        model3.title = "第三章"
+        model3.path = Bundle.main.path(forResource: "343509", ofType: "txt")
+        mreader.readWith(chapters: [model1, model2, model3], pageIndex: 1)
         
 //        记录阅读的书，demo使用
         curBookName = "郭黄之恋"

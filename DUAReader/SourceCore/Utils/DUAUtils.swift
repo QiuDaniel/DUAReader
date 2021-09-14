@@ -117,6 +117,10 @@ class DUAUtils: NSObject {
         return parentPath
     }
     
-    
+    class func formatterHTMLString(_ string: String) -> String {
+        var tmpString = string
+        tmpString = tmpString.replacingOccurrences(of: "&quot;", with: "\"").replacingOccurrences(of: "&apos;", with: "'").replacingOccurrences(of: "&lt;", with: "<").replacingOccurrences(of: "&gt;", with: ">").replacingOccurrences(of: "&amp;", with: "&").replacingOccurrences(of: "&nbsp;", with: " ").replacingOccurrences(of: "&ldquo;", with: "“").replacingOccurrences(of: "&rdquo;", with: "”")
+        return tmpString
+    }
 }
 
